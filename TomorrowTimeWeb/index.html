@@ -47,7 +47,6 @@
     }
     .item.selected {
       background: var(--primary-light);
-      border-color: var(--primary);
       border-left: 4px solid var(--primary);
     }
     .item-time {
@@ -218,13 +217,16 @@
           el.addEventListener('touchend', function(e) {
             const dx = e.changedTouches[0].clientX - touchStartX;
             const idx = parseInt(el.dataset.idx);
-            if (dx > 40) {
-              times.forEach((t, i) => t.show = i === idx);
-            } else if (dx < -40) {
-              times.forEach(t => t.show = false);
+            if (Math.abs(dx) > 10) {
+              e.preventDefault();
+              if (dx > 40) {
+                times.forEach((t, i) => t.show = i === idx);
+              } else {
+                times.forEach(t => t.show = false);
+              }
+              render();
             }
-            render();
-          }, { passive: true });
+          });
         });
       }
       calcBtn.disabled = selected === -1;
