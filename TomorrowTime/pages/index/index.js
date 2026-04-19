@@ -43,7 +43,10 @@ Page({
   onConfirmPicker() {
     const [hour, minute] = this.data.pickerValue
     const newTime = { hour, minute }
-    const updated = [...this.data.presetTimes, newTime]
+    const updated = [...this.data.presetTimes, newTime].sort((a, b) => {
+      if (a.hour !== b.hour) return a.hour - b.hour
+      return a.minute - b.minute
+    })
     wx.setStorageSync('presetTimes', updated)
     this.setData({
       presetTimes: updated,
