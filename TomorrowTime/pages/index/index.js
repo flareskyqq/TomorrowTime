@@ -68,11 +68,16 @@ Page({
   },
   onTouchEnd(e) {
     const deltaX = e.changedTouches[0].clientX - this.touchStartX
-    if (deltaX < -50) {
+    if (deltaX > 50) {
+      // 右滑，显示删除
       const index = e.currentTarget.dataset.index
       const updated = this.data.presetTimes.map((item, i) =>
         i === index ? { ...item, showDelete: true } : { ...item, showDelete: false }
       )
+      this.setData({ presetTimes: updated })
+    } else if (deltaX < -50) {
+      // 左滑，隐藏删除
+      const updated = this.data.presetTimes.map(item => ({ ...item, showDelete: false }))
       this.setData({ presetTimes: updated })
     }
   },
