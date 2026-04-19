@@ -13,11 +13,13 @@ Page({
   onLoad() {
     const saved = wx.getStorageSync('presetTimes')
     if (saved) {
-      // 确保加载时也排序
-      const sorted = saved.sort((a, b) => {
-        if (a.hour !== b.hour) return a.hour - b.hour
-        return a.minute - b.minute
-      })
+      // 排序 + 重置所有 showDelete 为 false
+      const sorted = saved
+        .map(item => ({ ...item, showDelete: false }))
+        .sort((a, b) => {
+          if (a.hour !== b.hour) return a.hour - b.hour
+          return a.minute - b.minute
+        })
       this.setData({ presetTimes: sorted })
     }
   },
@@ -47,11 +49,13 @@ Page({
 
   onConfirmPicker() {
     const [hour, minute] = this.data.pickerValue
-    const newTime = { hour, minute }
-    const updated = [...this.data.presetTimes, newTime].sort((a, b) => {
-      if (a.hour !== b.hour) return a.hour - b.hour
-      return a.minute - b.minute
-    })
+    const newTime = { hour, minute, showDelete: false }
+    const updated = [...this.data.presetTimes, newTime]
+      .map(item => ({ ...item, showDelete: false }))
+      .sort((a, b) => {
+        if (a.hour !== b.hour) return a.hour - b.hour
+        return a.minute - b.minute
+      })
     wx.setStorageSync('presetTimes', updated)
     this.setData({
       presetTimes: updated,
