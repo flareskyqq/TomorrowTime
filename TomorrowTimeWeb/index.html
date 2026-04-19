@@ -275,11 +275,10 @@
       resultCard.classList.remove('show');
     }
 
-    // 点击列表
-    list.onclick = function(e) {
+    // 删除按钮点击
+    document.addEventListener('click', function(e) {
       const del = e.target.closest('.delete-area');
       if (del) {
-        e.stopPropagation();
         const idx = parseInt(del.dataset.i);
         times.splice(idx, 1);
         if (selected >= times.length) selected = times.length - 1;
@@ -288,14 +287,14 @@
         render();
         return;
       }
+
       const content = e.target.closest('.item-content');
       if (content) {
         selected = parseInt(content.dataset.i);
-        // 点击内容也隐藏删除按钮
         times.forEach(t => t.show = false);
         render();
       }
-    };
+    });
 
     // 添加按钮
     document.getElementById('addBtn').onclick = function() {
