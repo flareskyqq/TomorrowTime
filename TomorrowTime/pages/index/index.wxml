@@ -1,0 +1,66 @@
+<view class="page">
+  <view class="container">
+    <view class="preset-list">
+  <block wx:for="{{presetTimes}}" wx:key="index">
+    <view
+      class="preset-item-wrapper {{item.showDelete ? 'show-delete' : ''}}"
+      bindtouchstart="onTouchStart"
+      bindtouchend="onTouchEnd"
+      data-index="{{index}}"
+    >
+      <view
+        class="preset-item {{selectedIndex === index ? 'selected' : ''}}"
+        bindtap="onSelectTime"
+        data-index="{{index}}"
+      >
+        <text>{{item.hour < 10 ? '0' + item.hour : item.hour}}:{{item.minute < 10 ? '0' + item.minute : item.minute}}</text>
+      </view>
+      <view class="delete-btn" bindtap="onDeleteTime" data-index="{{index}}">删除</view>
+    </view>
+  </block>
+  <view wx:if="{{presetTimes.length === 0}}" class="empty-hint">
+    暂无预设时间，请点击下方添加
+  </view>
+</view>
+
+<view class="add-section">
+  <view class="add-btn" bindtap="onAddTime">
+    <text>+</text> 添加时间
+  </view>
+</view>
+
+<view class="calc-section">
+  <button
+    class="calc-btn {{selectedIndex === -1 ? 'disabled' : ''}}"
+    bindtap="onCalculate"
+    disabled="{{selectedIndex === -1}}"
+  >计算</button>
+
+  <view wx:if="{{result}}" class="result-card">
+    <text class="result-text">{{result.display}}</text>
+  </view>
+</view>
+
+<view wx:if="{{showPicker}}" class="picker-mask" bindtap="onCancelPicker">
+  <view class="picker-panel" catchtap="">
+    <view class="picker-header">
+      <text class="cancel-btn" bindtap="onCancelPicker">取消</text>
+      <text class="title">选择时间</text>
+      <text class="confirm-btn" bindtap="onConfirmPicker">确定</text>
+    </view>
+    <picker-view
+      class="wheel-picker"
+      value="{{pickerValue}}"
+      bindchange="onPickerChange"
+    >
+      <picker-view-column>
+        <view wx:for="{{hours}}" wx:key="index" class="picker-item">{{item}}时</view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{minutes}}" wx:key="index" class="picker-item">{{item}}分</view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+</view>
+  </view>
+</view>

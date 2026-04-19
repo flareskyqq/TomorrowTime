@@ -1,0 +1,8 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "时间计算器",
+    "navigationBarBackgroundColor": "#1A73E8",
+    "navigationBarTextStyle": "white"
+  }
+}

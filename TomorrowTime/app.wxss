@@ -1,0 +1,9 @@
+page {
+  --primary: #1A73E8;
+  --primary-light: #E8F0FE;
+  --text: #202124;
+  --border: #DADCE0;
+  --bg: #FFFFFF;
+  background: #F5F5F5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
