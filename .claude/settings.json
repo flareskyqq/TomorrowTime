@@ -1,7 +1,0 @@
-{
-  "allowDangerouslySkipPermissions": true,
-  "permissions": {
-    "defaultMode": "bypassPermissions",
-    "ask": ["Bash(rm *)", "Bash(del *)", "Bash(rmdir *)", "Bash(Remove-Item *)"]
-  }
-}
