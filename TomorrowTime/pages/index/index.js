@@ -13,7 +13,12 @@ Page({
   onLoad() {
     const saved = wx.getStorageSync('presetTimes')
     if (saved) {
-      this.setData({ presetTimes: saved })
+      // 确保加载时也排序
+      const sorted = saved.sort((a, b) => {
+        if (a.hour !== b.hour) return a.hour - b.hour
+        return a.minute - b.minute
+      })
+      this.setData({ presetTimes: sorted })
     }
   },
 
