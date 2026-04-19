@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>时间计算器</title>
+  <!-- iOS 主屏幕图标 -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='62' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
+  <link rel="apple-touch-icon-precomposed" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='62' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
+  <meta name="apple-mobile-web-app-title" content="时间计算器">
   <style>
     :root {
       --primary: #1A73E8;
@@ -46,6 +50,7 @@
       overflow: hidden;
       border-radius: 8px;
       margin-bottom: 8px;
+      background: white;
     }
     .preset-item {
       background: white;
@@ -57,6 +62,7 @@
       transition: transform 0.2s;
       cursor: pointer;
       user-select: none;
+      touch-action: pan-y;
     }
     .preset-item.selected {
       background: var(--primary-light);
@@ -76,14 +82,14 @@
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.2s;
+      transform: translateX(70px);
+      transition: transform 0.2s;
     }
     .preset-item-wrapper.show-delete .preset-item {
       transform: translateX(-70px);
     }
     .preset-item-wrapper.show-delete .delete-btn {
-      opacity: 1;
+      transform: translateX(0);
     }
     .empty-hint {
       text-align: center;
@@ -177,33 +183,6 @@
       height: 200px;
       overflow: hidden;
     }
-    .wheel-column {
-      flex: 1;
-      height: 200px;
-      overflow-y: scroll;
-      scrollbar-width: none;
-    }
-    .wheel-column::-webkit-scrollbar { display: none; }
-    .wheel-item {
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: #9AA0A6;
-      cursor: pointer;
-    }
-    .wheel-item.active {
-      color: var(--text);
-      font-weight: 600;
-      font-size: 20px;
-    }
-    .wheel-wrapper {
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
     .wheel-col-wrapper {
       flex: 1;
       position: relative;
@@ -219,6 +198,27 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       pointer-events: none;
+    }
+    .wheel-column {
+      flex: 1;
+      height: 200px;
+      overflow-y: scroll;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .wheel-column::-webkit-scrollbar { display: none; }
+    .wheel-item {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #9AA0A6;
+    }
+    .wheel-item.active {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 20px;
     }
   </style>
 </head>
@@ -296,7 +296,7 @@
 
     // Render list
     function render() {
-      presetTimes.forEach((item, i) => item.showDelete = false);
+      presetTimes.forEach((item) => item.showDelete = false);
 
       if (presetTimes.length === 0) {
         presetList.innerHTML = '<div class="empty-hint">暂无预设时间，请点击下方添加</div>';
@@ -317,13 +317,14 @@
 
     function pad(n) { return n < 10 ? '0' + n : n; }
 
-    // Event: select time
-    presetList.addEventListener('click', e => {
+    // Event: preset list click
+    presetList.onclick = function(e) {
       const delBtn = e.target.closest('.delete-btn');
       if (delBtn) {
+        e.stopPropagation();
         const idx = parseInt(delBtn.dataset.index);
         presetTimes.splice(idx, 1);
-        if (selectedIndex >= presetTimes.length) selectedIndex = -1;
+        if (selectedIndex >= presetTimes.length) selectedIndex = presetTimes.length > 0 ? presetTimes.length - 1 : -1;
         save();
         render();
         return;
@@ -334,29 +335,37 @@
         selectedIndex = parseInt(item.dataset.index);
         render();
       }
-    });
+    };
 
     // Event: touch swipe
-    presetList.addEventListener('touchstart', e => {
+    presetList.ontouchstart = function(e) {
+      const item = e.target.closest('.preset-item-wrapper');
+      if (!item) return;
       touchStartX = e.touches[0].clientX;
-    }, { passive: true });
+    };
 
-    presetList.addEventListener('touchend', e => {
+    presetList.ontouchend = function(e) {
+      const item = e.target.closest('.preset-item-wrapper');
+      if (!item) return;
       const deltaX = e.changedTouches[0].clientX - touchStartX;
-      const wrapper = e.target.closest('.preset-item-wrapper');
-      if (!wrapper) return;
-      const idx = parseInt(wrapper.dataset.index);
+      const idx = parseInt(item.dataset.index);
 
       if (deltaX > 50) {
-        presetTimes.forEach((item, i) => item.showDelete = i === idx);
+        // 右滑，显示删除
+        presetTimes.forEach((t, i) => t.showDelete = i === idx);
       } else if (deltaX < -50) {
-        presetTimes.forEach(item => item.showDelete = false);
+        // 左滑，隐藏删除
+        presetTimes.forEach(t => t.showDelete = false);
       }
       render();
-    }, { passive: true });
+    };
+
+    presetList.ontouchmove = function(e) {
+      // 阻止页面滚动与列表滑动冲突
+    };
 
     // Event: add button
-    document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('addBtn').onclick = function() {
       const now = new Date();
       pickerHour = now.getHours() + 1;
       if (pickerHour >= 24) pickerHour = 0;
@@ -364,22 +373,22 @@
       pickerMask.classList.add('active');
       scrollToActive(hourColumn, pickerHour);
       scrollToActive(minuteColumn, pickerMinute);
-    });
+    };
 
     // Event: cancel picker
-    document.getElementById('cancelBtn').addEventListener('click', () => {
+    document.getElementById('cancelBtn').onclick = function() {
       pickerMask.classList.remove('active');
-    });
+    };
 
     // Event: confirm picker
-    document.getElementById('confirmBtn').addEventListener('click', () => {
+    document.getElementById('confirmBtn').onclick = function() {
       const newTime = { hour: pickerHour, minute: pickerMinute, showDelete: false };
       presetTimes.push(newTime);
       presetTimes.sort(sortTimes);
       save();
       render();
       pickerMask.classList.remove('active');
-    });
+    };
 
     // Build picker wheels
     function buildPicker() {
@@ -390,16 +399,16 @@
         `<div class="wheel-item" data-val="${i}">${pad(i)}分</div>`
       ).join('');
 
-      hourColumn.addEventListener('scroll', () => {
+      hourColumn.onscroll = function() {
         const idx = Math.round(hourColumn.scrollTop / 40);
         pickerHour = Math.max(0, Math.min(23, idx));
         updateActive(hourColumn, pickerHour);
-      });
-      minuteColumn.addEventListener('scroll', () => {
+      };
+      minuteColumn.onscroll = function() {
         const idx = Math.round(minuteColumn.scrollTop / 40);
         pickerMinute = Math.max(0, Math.min(59, idx));
         updateActive(minuteColumn, pickerMinute);
-      });
+      };
     }
 
     function scrollToActive(col, val) {
@@ -414,7 +423,7 @@
     }
 
     // Event: calculate
-    calcBtn.addEventListener('click', () => {
+    calcBtn.onclick = function() {
       if (selectedIndex === -1) return;
       const { hour, minute } = presetTimes[selectedIndex];
       const now = new Date();
@@ -436,7 +445,7 @@
       const prefix = isPast ? '已过 ' : '还剩 ';
       resultText.textContent = `距离明天 ${pad(hour)}:${pad(minute)} ${prefix}${hours} 小时 ${minutes} 分钟`;
       resultCard.style.display = 'block';
-    });
+    };
 
     function save() {
       localStorage.setItem('presetTimes', JSON.stringify(presetTimes));
