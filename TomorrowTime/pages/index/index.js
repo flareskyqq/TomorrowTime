@@ -74,9 +74,6 @@ Page({
         i === index ? { ...item, showDelete: true } : { ...item, showDelete: false }
       )
       this.setData({ presetTimes: updated })
-    } else if (deltaX > 50) {
-      const updated = this.data.presetTimes.map(item => ({ ...item, showDelete: false }))
-      this.setData({ presetTimes: updated })
     }
   },
   onDeleteTime(e) {
