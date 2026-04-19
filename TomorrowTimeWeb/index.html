@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>时间计算器</title>
-  <!-- iOS 主屏幕图标 -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='62' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
-  <link rel="apple-touch-icon-precomposed" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='62' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
+  <link rel="apple-touch-icon-precomposed" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A73E8'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>⏰</text></svg>">
   <meta name="apple-mobile-web-app-title" content="时间计算器">
   <style>
     :root {
@@ -14,16 +13,15 @@
       --primary-light: #E8F0FE;
       --text: #202124;
       --border: #DADCE0;
-      --bg: #FFFFFF;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #F5F5F5;
       color: var(--text);
       min-height: 100vh;
     }
+
     .container {
       background: white;
       max-width: 480px;
@@ -31,7 +29,6 @@
       min-height: 100vh;
     }
 
-    /* Header */
     .header {
       background: var(--primary);
       color: white;
@@ -41,38 +38,33 @@
       font-weight: 600;
     }
 
-    /* Preset List */
-    .preset-list {
-      padding: 16px;
-    }
-    .preset-item-wrapper {
+    .preset-list { padding: 16px; }
+
+    .item {
       position: relative;
-      overflow: hidden;
+      margin-bottom: 10px;
       border-radius: 8px;
-      margin-bottom: 8px;
-      background: white;
+      overflow: hidden;
     }
-    .preset-item {
+    .item-content {
       background: white;
       border: 1px solid var(--border);
       padding: 14px 16px;
       font-size: 18px;
+      background: #fff;
       display: flex;
       align-items: center;
-      transition: transform 0.2s;
-      cursor: pointer;
-      user-select: none;
       touch-action: pan-y;
     }
-    .preset-item.selected {
+    .item-content.selected {
       background: var(--primary-light);
       border-color: var(--primary);
       border-left: 4px solid var(--primary);
     }
-    .preset-item .time-text {
+    .item-content .time {
       flex: 1;
     }
-    .delete-btn {
+    .item .delete-area {
       position: absolute;
       right: 0; top: 0; bottom: 0;
       width: 70px;
@@ -81,27 +73,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
-      transform: translateX(70px);
-      transition: transform 0.2s;
+      font-size: 15px;
+      opacity: 0;
+      pointer-events: none;
     }
-    .preset-item-wrapper.show-delete .preset-item {
-      transform: translateX(-70px);
-    }
-    .preset-item-wrapper.show-delete .delete-btn {
-      transform: translateX(0);
-    }
+    .item.show-delete .delete-area { opacity: 1; }
+    .item.show-delete .item-content { transform: translateX(-70px); }
+
+    .item-content { transition: transform 0.15s; }
+
     .empty-hint {
       text-align: center;
       color: #9AA0A6;
-      padding: 40px 16px;
+      padding: 40px;
       font-size: 14px;
     }
 
-    /* Add Button */
-    .add-section {
-      padding: 0 16px 16px;
-    }
+    .add-section { padding: 0 16px 16px; }
     .add-btn {
       display: flex;
       align-items: center;
@@ -112,10 +100,8 @@
       padding: 14px;
       border: 1px dashed var(--primary);
       border-radius: 8px;
-      cursor: pointer;
     }
 
-    /* Calc Section */
     .calc-section {
       padding: 16px;
       display: flex;
@@ -131,12 +117,10 @@
       border-radius: 24px;
       font-size: 16px;
       padding: 14px;
-      cursor: pointer;
     }
     .calc-btn:disabled {
       background: #DADCE0;
       color: #9AA0A6;
-      cursor: not-allowed;
     }
     .result-card {
       width: 90%;
@@ -144,17 +128,18 @@
       border-radius: 12px;
       padding: 24px;
       text-align: center;
+      display: none;
     }
+    .result-card.show { display: block; }
     .result-text {
       font-size: 18px;
       color: var(--text);
       line-height: 1.6;
     }
 
-    /* Picker Modal */
+    /* Picker */
     .picker-mask {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5);
       z-index: 999;
       display: none;
@@ -173,40 +158,13 @@
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid var(--border);
-      font-size: 16px;
     }
-    .cancel-btn { color: #666; cursor: pointer; }
-    .confirm-btn { color: var(--primary); font-weight: bold; cursor: pointer; }
-    .title { color: var(--text); }
-    .wheel-picker {
-      display: flex;
-      height: 200px;
-      overflow: hidden;
-    }
-    .wheel-col-wrapper {
-      flex: 1;
-      position: relative;
-    }
-    .wheel-col-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 10%;
-      right: 10%;
-      height: 40px;
-      transform: translateY(-50%);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      pointer-events: none;
-    }
-    .wheel-column {
-      flex: 1;
-      height: 200px;
-      overflow-y: scroll;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    .wheel-column::-webkit-scrollbar { display: none; }
+    .cancel-btn { color: #666; font-size: 16px; }
+    .confirm-btn { color: var(--primary); font-size: 16px; font-weight: bold; }
+    .title { color: var(--text); font-size: 16px; }
+    .wheel { display: flex; height: 200px; overflow: hidden; }
+    .wheel-col { flex: 1; height: 200px; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
+    .wheel-col::-webkit-scrollbar { display: none; }
     .wheel-item {
       height: 40px;
       display: flex;
@@ -215,34 +173,25 @@
       font-size: 18px;
       color: #9AA0A6;
     }
-    .wheel-item.active {
-      color: var(--text);
-      font-weight: 600;
-      font-size: 20px;
-    }
+    .wheel-item.active { color: var(--text); font-weight: 600; font-size: 20px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">时间计算器</div>
-
-    <div class="preset-list" id="presetList"></div>
-
+    <div class="preset-list" id="list"></div>
     <div class="add-section">
-      <div class="add-btn" id="addBtn">
-        <span>+</span> 添加时间
-      </div>
+      <div class="add-btn" id="addBtn">+ 添加时间</div>
     </div>
-
     <div class="calc-section">
       <button class="calc-btn" id="calcBtn" disabled>计算</button>
-      <div class="result-card" id="resultCard" style="display:none">
+      <div class="result-card" id="resultCard">
         <div class="result-text" id="resultText"></div>
       </div>
     </div>
   </div>
 
-  <!-- Picker Modal -->
+  <!-- Picker -->
   <div class="picker-mask" id="pickerMask">
     <div class="picker-panel">
       <div class="picker-header">
@@ -250,206 +199,179 @@
         <span class="title">选择时间</span>
         <span class="confirm-btn" id="confirmBtn">确定</span>
       </div>
-      <div class="wheel-picker">
-        <div class="wheel-col-wrapper">
-          <div class="wheel-column" id="hourColumn"></div>
-        </div>
-        <div class="wheel-col-wrapper">
-          <div class="wheel-column" id="minuteColumn"></div>
-        </div>
+      <div class="wheel">
+        <div class="wheel-col" id="hourCol"></div>
+        <div class="wheel-col" id="minCol"></div>
       </div>
     </div>
   </div>
 
   <script>
-    // State
-    let presetTimes = [];
-    let selectedIndex = -1;
-    let touchStartX = 0;
-    let pickerHour = 0;
-    let pickerMinute = 0;
+    let times = [];
+    let selected = -1;
+    let touchX = 0;
+    let activeItem = -1;
+    let pickerH = 0, pickerM = 0;
 
-    // DOM refs
-    const presetList = document.getElementById('presetList');
+    const list = document.getElementById('list');
     const calcBtn = document.getElementById('calcBtn');
     const resultCard = document.getElementById('resultCard');
     const resultText = document.getElementById('resultText');
     const pickerMask = document.getElementById('pickerMask');
-    const hourColumn = document.getElementById('hourColumn');
-    const minuteColumn = document.getElementById('minuteColumn');
+    const hourCol = document.getElementById('hourCol');
+    const minCol = document.getElementById('minCol');
 
-    // Init
     function init() {
-      const saved = localStorage.getItem('presetTimes');
-      if (saved) {
-        presetTimes = JSON.parse(saved).map(item => ({ ...item, showDelete: false }));
-        presetTimes.sort(sortTimes);
+      const s = localStorage.getItem('t');
+      if (s) {
+        times = JSON.parse(s);
       }
       render();
       buildPicker();
     }
 
-    function sortTimes(a, b) {
-      if (a.hour !== b.hour) return a.hour - b.hour;
-      return a.minute - b.minute;
-    }
-
-    // Render list
-    function render() {
-      presetTimes.forEach((item) => item.showDelete = false);
-
-      if (presetTimes.length === 0) {
-        presetList.innerHTML = '<div class="empty-hint">暂无预设时间，请点击下方添加</div>';
-      } else {
-        presetList.innerHTML = presetTimes.map((item, i) => `
-          <div class="preset-item-wrapper ${item.showDelete ? 'show-delete' : ''}" data-index="${i}">
-            <div class="preset-item ${selectedIndex === i ? 'selected' : ''}" data-index="${i}">
-              <span class="time-text">${pad(item.hour)}:${pad(item.minute)}</span>
-            </div>
-            <div class="delete-btn" data-index="${i}">删除</div>
-          </div>
-        `).join('');
-      }
-
-      calcBtn.disabled = selectedIndex === -1;
-      resultCard.style.display = 'none';
+    function save() {
+      localStorage.setItem('t', JSON.stringify(times));
     }
 
     function pad(n) { return n < 10 ? '0' + n : n; }
 
-    // Event: preset list click
-    presetList.onclick = function(e) {
-      const delBtn = e.target.closest('.delete-btn');
-      if (delBtn) {
+    function render() {
+      if (!times.length) {
+        list.innerHTML = '<div class="empty-hint">暂无预设时间，请点击下方添加</div>';
+      } else {
+        list.innerHTML = times.map((t, i) => `
+          <div class="item ${t.show ? 'show-delete' : ''}" data-i="${i}">
+            <div class="item-content ${selected === i ? 'selected' : ''}" data-i="${i}">${pad(t.hour)}:${pad(t.minute)}</div>
+            <div class="delete-area" data-i="${i}">删除</div>
+          </div>
+        `).join('');
+
+        // 绑定每个 item 的 touch 事件
+        list.querySelectorAll('.item').forEach(el => {
+          const idx = parseInt(el.dataset.i);
+
+          el.addEventListener('touchstart', function(e) {
+            touchX = e.touches[0].clientX;
+            activeItem = idx;
+          }, { passive: true });
+
+          el.addEventListener('touchend', function(e) {
+            const dx = e.changedTouches[0].clientX - touchX;
+            if (dx > 30) {
+              // 右滑 → 显示删除
+              times.forEach((t, i) => t.show = i === idx);
+            } else if (dx < -30) {
+              // 左滑 → 隐藏删除
+              times.forEach(t => t.show = false);
+            }
+            activeItem = -1;
+            render();
+          }, { passive: true });
+        });
+      }
+
+      calcBtn.disabled = selected === -1;
+      resultCard.classList.remove('show');
+    }
+
+    // 点击列表
+    list.onclick = function(e) {
+      const del = e.target.closest('.delete-area');
+      if (del) {
         e.stopPropagation();
-        const idx = parseInt(delBtn.dataset.index);
-        presetTimes.splice(idx, 1);
-        if (selectedIndex >= presetTimes.length) selectedIndex = presetTimes.length > 0 ? presetTimes.length - 1 : -1;
+        const idx = parseInt(del.dataset.i);
+        times.splice(idx, 1);
+        if (selected >= times.length) selected = times.length - 1;
+        if (selected < 0) selected = -1;
         save();
         render();
         return;
       }
-
-      const item = e.target.closest('.preset-item');
-      if (item) {
-        selectedIndex = parseInt(item.dataset.index);
+      const content = e.target.closest('.item-content');
+      if (content) {
+        selected = parseInt(content.dataset.i);
+        // 点击内容也隐藏删除按钮
+        times.forEach(t => t.show = false);
         render();
       }
     };
 
-    // Event: touch swipe
-    presetList.ontouchstart = function(e) {
-      const item = e.target.closest('.preset-item-wrapper');
-      if (!item) return;
-      touchStartX = e.touches[0].clientX;
-    };
-
-    presetList.ontouchend = function(e) {
-      const item = e.target.closest('.preset-item-wrapper');
-      if (!item) return;
-      const deltaX = e.changedTouches[0].clientX - touchStartX;
-      const idx = parseInt(item.dataset.index);
-
-      if (deltaX > 50) {
-        // 右滑，显示删除
-        presetTimes.forEach((t, i) => t.showDelete = i === idx);
-      } else if (deltaX < -50) {
-        // 左滑，隐藏删除
-        presetTimes.forEach(t => t.showDelete = false);
-      }
-      render();
-    };
-
-    presetList.ontouchmove = function(e) {
-      // 阻止页面滚动与列表滑动冲突
-    };
-
-    // Event: add button
+    // 添加按钮
     document.getElementById('addBtn').onclick = function() {
       const now = new Date();
-      pickerHour = now.getHours() + 1;
-      if (pickerHour >= 24) pickerHour = 0;
-      pickerMinute = now.getMinutes();
+      pickerH = now.getHours() + 1;
+      if (pickerH >= 24) pickerH = 0;
+      pickerM = now.getMinutes();
+      times.forEach(t => t.show = false);
+      render();
       pickerMask.classList.add('active');
-      scrollToActive(hourColumn, pickerHour);
-      scrollToActive(minuteColumn, pickerMinute);
+      scrollTo(hourCol, pickerH);
+      scrollTo(minCol, pickerM);
+      updateActive();
     };
 
-    // Event: cancel picker
     document.getElementById('cancelBtn').onclick = function() {
       pickerMask.classList.remove('active');
     };
 
-    // Event: confirm picker
     document.getElementById('confirmBtn').onclick = function() {
-      const newTime = { hour: pickerHour, minute: pickerMinute, showDelete: false };
-      presetTimes.push(newTime);
-      presetTimes.sort(sortTimes);
+      times.push({ hour: pickerH, minute: pickerM, show: false });
+      times.sort((a, b) => a.hour !== b.hour ? a.hour - b.hour : a.minute - b.minute);
       save();
       render();
       pickerMask.classList.remove('active');
     };
 
-    // Build picker wheels
     function buildPicker() {
-      hourColumn.innerHTML = Array.from({length: 24}, (_, i) =>
-        `<div class="wheel-item" data-val="${i}">${pad(i)}时</div>`
+      hourCol.innerHTML = Array.from({length: 24}, (_, i) =>
+        `<div class="wheel-item" data-v="${i}">${pad(i)}时</div>`
       ).join('');
-      minuteColumn.innerHTML = Array.from({length: 60}, (_, i) =>
-        `<div class="wheel-item" data-val="${i}">${pad(i)}分</div>`
+      minCol.innerHTML = Array.from({length: 60}, (_, i) =>
+        `<div class="wheel-item" data-v="${i}">${pad(i)}分</div>`
       ).join('');
 
-      hourColumn.onscroll = function() {
-        const idx = Math.round(hourColumn.scrollTop / 40);
-        pickerHour = Math.max(0, Math.min(23, idx));
-        updateActive(hourColumn, pickerHour);
-      };
-      minuteColumn.onscroll = function() {
-        const idx = Math.round(minuteColumn.scrollTop / 40);
-        pickerMinute = Math.max(0, Math.min(59, idx));
-        updateActive(minuteColumn, pickerMinute);
-      };
-    }
-
-    function scrollToActive(col, val) {
-      col.scrollTop = val * 40;
-      updateActive(col, val);
-    }
-
-    function updateActive(col, val) {
-      col.querySelectorAll('.wheel-item').forEach((el, i) => {
-        el.classList.toggle('active', i === val);
+      hourCol.addEventListener('scroll', function() {
+        const idx = Math.round(hourCol.scrollTop / 40);
+        pickerH = Math.max(0, Math.min(23, idx));
+        updateActive();
+      });
+      minCol.addEventListener('scroll', function() {
+        const idx = Math.round(minCol.scrollTop / 40);
+        pickerM = Math.max(0, Math.min(59, idx));
+        updateActive();
       });
     }
 
-    // Event: calculate
+    function scrollTo(col, val) {
+      col.scrollTop = val * 40;
+    }
+
+    function updateActive() {
+      hourCol.querySelectorAll('.wheel-item').forEach((el, i) => el.classList.toggle('active', i === pickerH));
+      minCol.querySelectorAll('.wheel-item').forEach((el, i) => el.classList.toggle('active', i === pickerM));
+    }
+
+    // 计算
     calcBtn.onclick = function() {
-      if (selectedIndex === -1) return;
-      const { hour, minute } = presetTimes[selectedIndex];
+      if (selected < 0) return;
+      const { hour, minute } = times[selected];
       const now = new Date();
       const target = new Date(now);
       target.setDate(target.getDate() + 1);
       target.setHours(hour, minute, 0, 0);
 
-      let diffMs = target - now;
-      let isPast = false;
-      if (diffMs < 0) {
-        isPast = true;
-        diffMs = Math.abs(diffMs);
-      }
+      let diff = target - now;
+      const isPast = diff < 0;
+      if (diff < 0) diff = Math.abs(diff);
 
-      const totalMinutes = Math.floor(diffMs / 60000);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
+      const totalMin = Math.floor(diff / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
 
-      const prefix = isPast ? '已过 ' : '还剩 ';
-      resultText.textContent = `距离明天 ${pad(hour)}:${pad(minute)} ${prefix}${hours} 小时 ${minutes} 分钟`;
-      resultCard.style.display = 'block';
+      resultText.textContent = `距离明天 ${pad(hour)}:${pad(minute)} ${isPast ? '已过' : '还剩'} ${h} 小时 ${m} 分钟`;
+      resultCard.classList.add('show');
     };
-
-    function save() {
-      localStorage.setItem('presetTimes', JSON.stringify(presetTimes));
-    }
 
     init();
   </script>
