@@ -165,6 +165,11 @@
     function init() {
       const s = localStorage.getItem('t');
       if (s) times = JSON.parse(s);
+      const sel = localStorage.getItem('s');
+      if (sel !== null) {
+        const idx = parseInt(sel);
+        if (idx >= 0 && idx < times.length) selected = idx;
+      }
       render();
       buildPicker();
     }
@@ -202,6 +207,7 @@
         times.splice(i, 1);
         if (selected >= times.length) selected = times.length > 0 ? times.length - 1 : -1;
         if (selected < 0) selected = -1;
+        if (selected >= 0) localStorage.setItem('s', selected); else localStorage.removeItem('s');
         showDel = -1;
         save();
         render();
@@ -211,6 +217,7 @@
       if (e.target.classList.contains('time')) {
         // 选中
         selected = i;
+        localStorage.setItem('s', selected);
         showDel = -1;
         render();
         return;
